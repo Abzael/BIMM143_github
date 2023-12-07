@@ -7,7 +7,7 @@ My class work for Fall23 in [Bimm143](https://bioboot.github.io/bimm143_F23/) at
 - Class 08: [Mini Project](https://github.com/Abzael/BIMM143_github/blob/main/Class%2008/Untitled.pdf)
 - Class 09: [Halloween Project](https://github.com/Abzael/BIMM143_github/blob/main/Class%2009/Class09_Halloween.pdf)
 - Class 10: [Structural Bioinformatics](https://github.com/Abzael/BIMM143_github/blob/main/Class/Class05.pdf)
-- Class 11: [Alphafold Bioinformatics](http://localhost:7214/web/viewer.html)
+- Class 11: [Alphafold Bioinformatics](https://github.com/Abzael/BIMM143_github/blob/main/Class%2011/Class11-2.pdf)
 - Class 13: [Transcriptomics](https://github.com/Abzael/BIMM143_github/blob/main/Class%2013/Class-13---Transcriptomics.pdf)
 - Class 14: [RNA-seq](https://github.com/Abzael/BIMM143_github/blob/main/BIMM%20143%20Class%2014/RNA-Seq-Analysis.pdf)
 - Class 17: [UNIX](https://github.com/Abzael/BIMM143_github/blob/main/Class%2017/Untitled.Rmd)
