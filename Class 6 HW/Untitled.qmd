@@ -1,0 +1,67 @@
+---
+title: "Class 6 HW"
+author: "Abzael Verduzco"
+format: pdf
+---
+
+```{r}
+library(bio3d)
+```
+
+```{r}
+#Encapsulate to reduce code replication
+x <- function(pdb_file, chain_id, plot_title) {
+  #Read PDB file
+  structure <- read.pdb(pdb_file)
+  
+  #Trim to the specified chain and extract CA atoms
+  chainA <- trim.pdb(structure, chain = chain_id, elety = "CA")
+  
+  #Extract B-factors
+  bfactors <- chainA$atom$b
+  
+  #Plot B-factors
+  plotb3(bfactors, sse = chainA, typ = "l", ylab = "Bfactor", main = plot_title)
+}
+
+#Specify PDB files and chain IDs
+pdb_files <- c("4AKE", "1AKE", "1E4Y")
+chain_ids <- c("A", "A", "A")
+plot_titles <- c("Kinase with Drug", "Kinase no Drug", "Kinase with Drug")
+
+#Loop to repeat the process
+for (i in 1:length(pdb_files)) {
+  x(pdb_files[i], chain_ids[i], plot_titles[i])
+}
+
+```
+
+>Q1. What type of object is returned from the read.pdb() function?
+
+The object returned is a pbd, a derivation of a protein data bank file. 
+
+>Q2. What does the trim.pdb() function do?
+
+Using trim.pdb() we can select a specific from a structure multi-chain. Overall, it cleans data from any unwanted aspects of it as we are able to get specifics. 
+
+>Q3. What input parameter would turn off the marginal black and grey rectangles in the plots and what do they represent in this case?
+
+Eliminating the sse parameter would then result in turning off marginal black and grey rectangles, these are the secondary structural elements of the protein. 
+
+>Q4. What would be a better plot to compare across the different proteins?
+
+A box plot, so as to have the side by side comparisons of the factors among the different proteins we are comparing. 
+
+Q5. Which proteins are more similar to each other in their B-factor trends. How could you quantify this?
+
+```{r}
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+```
+
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
