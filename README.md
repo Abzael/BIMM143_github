@@ -10,6 +10,5 @@ My class work for Fall23 in [Bimm143](https://bioboot.github.io/bimm143_F23/) at
 - Class 11: [Alphafold Bioinformatics](http://localhost:7214/web/viewer.html)
 - Class 13: [Transcriptomics](https://github.com/Abzael/BIMM143_github/blob/main/Class%2013/Class-13---Transcriptomics.pdf)
 - Class 14: [RNA-seq](https://github.com/Abzael/BIMM143_github/blob/main/BIMM%20143%20Class%2014/RNA-Seq-Analysis.pdf)
-- Class 15: 
 - Class 17: [UNIX](https://github.com/Abzael/BIMM143_github/blob/main/Class%2017/Untitled.Rmd)
 - Class 19: [Pertussis Resurgence](https://github.com/Abzael/BIMM143_github/blob/main/Class05/Class05.pdf)
