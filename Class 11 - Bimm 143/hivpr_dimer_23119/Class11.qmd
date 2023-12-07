@@ -1,0 +1,179 @@
+---
+title: "CLASS 11 - BIMM 143"
+author: "Abzael Verduzco"
+format: pdf
+---
+
+We need some packages for todays class. These include `bio3d` and `msa`. 
+ 
+The `msa` package is from BioConductor. These packages focus on genomics type work and are managed by the `BiocManager` package. 
+
+Install `install.packages("BioManager")` and then `BiocManager::install("msa")` all entered in the R "brain" console.
+
+>>Q10. Which of the packages above is found only on BioConductor and not CRAN?
+
+MSA 
+
+>>Q11. Which of the above packages is not found on BioConductor or CRAN?
+
+
+
+>>Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket?
+
+TRUE
+
+```{r}
+library(bio3d)
+
+aa <- get.seq("1ake_A")
+aa
+```
+
+>>Q13. How many amino acids are in this sequence, i.e. how long is this sequence?
+
+It is 214 amino acids long 
+
+```{r}
+#b <- blast.pdb(aa)
+```
+
+```{r}
+#hits <- plot(b)
+```
+
+```{r}
+#attributes(b)
+#head(b$hit.tbl)
+```
+
+```{r}
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','6S36_A','6RZE_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','3GMT_A','4PZL_A')
+```
+
+Side-note: Lets annotate these structures (in other word find out what they are, what they are from, stuff about the experiment they were solved in etc.)
+
+For this we can use the `pdb.annotate()`
+
+```{r}
+anno <- pdb.annotate(hits$pdb.id)
+```
+
+```{r}
+#attributes(anno)
+head(anno)
+```
+
+Now we can download all these structures for further analysis with the `get.pdb()` function. 
+
+```{r}
+#Download related PDB files 
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+
+```
+
+Now we have all these realated structures we can Align and Superpose...
+
+```{r}
+# Align related PDBs
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+pdbs
+```
+
+```{r}
+# Perform PCA
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+
+```{r}
+#Visualize first principal component 
+pcl <- mktrj(pc.xray, pc=1, file="pc_1.pdb")
+```
+
+Class 11 
+Primer 
+
+![](Primer.png)
+
+```{r}
+# Get the current working directory
+current_dir <- getwd()
+
+# Print the current working directory
+print(current_dir)
+```
+
+```{r}
+library(bio3d)
+
+results_dir <- current_dir
+```
+
+```{r}
+# File names for all PDB models
+pdb_files <- list.files(path=results_dir,
+                        pattern="*.pdb",
+                        full.names = TRUE)
+
+# Print our PDB file names
+basename(pdb_files)
+```
+
+```{r}
+library(bio3d)
+
+pdbs <- pdbaln(pdb_files, fit=TRUE , exefile="msa")
+```
+
+```{r}
+pdbs
+```
+
+```{r}
+rd <- rmsd(pdbs, fit=T)
+```
+
+```{r}
+range(rd)
+```
+
+```{r}
+library(pheatmap)
+
+colnames(rd) <- paste0("m",1:6)
+rownames(rd) <- paste0("m",1:6)
+pheatmap(rd)
+```
+
+```{r}
+# Read a reference PDB structure
+pdb <- read.pdb("1hsg")
+```
+
+```{r}
+plotb3(pdbs$b[1,], typ="l", lwd=2, sse=pdb)
+points(pdbs$b[2,], typ="l", col="red")
+points(pdbs$b[3,], typ="l", col="blue")
+points(pdbs$b[4,], typ="l", col="darkgreen")
+points(pdbs$b[5,], typ="l", col="orange")
+abline(v=100, col="gray")
+```
+
+```{r}
+core <- core.find(pdbs)
+```
+
+```{r}
+core.inds <- print(core, vol=0.5)
+```
+
+```{r}
+xyz <- pdbfit(pdbs, core.inds, outpath="corefit_structures")
+```
+
+Dimer 
+
+![](Dimer.png)
+
+

@@ -1,0 +1,332 @@
+---
+title: "Class 13"
+author: "Abzael Verduzco"
+format: pdf
+---
+```{r}
+library(BiocManager)
+library(DESeq2)
+```
+
+This week we are looking at differential expression analysis. 
+
+```{r}
+# Complete the missing code
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors = FALSE, row.names=1)
+metadata <-  read.csv("airway_metadata.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+head(counts)
+```
+
+```{r}
+head(metadata)
+```
+
+```{r}
+View(metadata)
+```
+
+```{r}
+nrow(counts)
+```
+
+>>Q1. How many genes are in this dataset? 
+
+There are 38694 genes in this data set. 
+
+>>Q2. How many ‘control’ cell lines do we have? 
+
+There are 4 control cell lines. 
+
+#4. Toy differential gene expression
+
+### Extract and summarize the control samples
+
+```{r}
+control <- metadata[metadata[,"dex"]=="control",]
+control.counts <- counts[ ,control$id]
+control.mean <- rowSums( control.counts )/4 
+head(control.mean)
+```
+
+## Extract and summarize the treated (i.e. drug) samples
+
+>>Q4. Follow the same procedure for the treated samples (i.e. calculate the mean per gene across drug treated samples and assign to a labeled vector called treated.mean)
+
+```{r}
+treated <- metadata[metadata[,"dex"]=="treated",]
+treated.counts <- counts[,treated$id]
+treated.mean <- rowMeans(treated.counts)
+```
+
+Store these results together in a new data frame called `meancounts` 
+
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+```
+
+Lets make a plot to explore the results a little
+
+```{r}
+plot(meancounts[,1], meancounts[,2], xlab="Control", ylab="Treated")
+```
+
+>>Q5 (b).You could also use the ggplot2 package to make this figure producing the plot below. What geom_?() function would you use for this plot?
+
+geom_point
+
+```{r}
+library(ggplot2)
+
+ggplot(meancounts) + 
+  aes(control.mean, treated.mean) +
+  geom_point()
+```
+
+We will make a log-log plot to draw out this skewed data and see what is going on. 
+
+>>Q6. Try plotting both axes on a log scale. What is the argument to plot() that allows you to do this? 
+
+log
+
+```{r}
+plot(meancounts[,1], meancounts[,2], log="xy",
+     xlab="Log Control Counts", 
+     ylab="Log of Treated Counts")
+```
+
+We often log2 transformations when dealing with this sort of data. 
+
+```{r}
+log2(20/20)
+```
+
+```{r}
+log2(40/20)
+```
+
+```{r}
+log2(20/40)
+```
+
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treated.mean"]/meancounts[,"control.mean"])
+head(meancounts)
+```
+
+```{r}
+zero.vals <- which(meancounts[,1:2]==0, arr.ind=TRUE)
+
+to.rm <- unique(zero.vals[,1])
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+
+>>Q7. What is the purpose of the arr.ind argument in the which() function call above? Why would we then take the first column of the output and need to call the unique() function?
+
+It will return both the rows and colums where there are TRUE values. 
+Unique() will make sure they are not present twice. 
+
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+```
+
+>>Q8. Using the up.ind vector above can you determine how many up regulated genes we have at the greater than 2 fc level? 
+
+```{r}
+sum(up.ind)
+```
+There are 250 up regulated genes. 
+
+>>Q9. Using the down.ind vector above can you determine how many down regulated genes we have at the greater than 2 fc level? 
+
+```{r}
+sum(down.ind)
+```
+There are 367 down regulated genes. 
+
+>>Q10. Do you trust these results? Why or why not?
+
+No, as we haven't made sure they are significant we will need to use DESeq2 to make sure of this. 
+
+## Setting up for DESeq
+
+```{r}
+library(DESeq2)
+citation("DESeq2")
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex)
+dds
+```
+
+```{r}
+vsd <- vst(dds, blind = FALSE)
+plotPCA(vsd, intgroup = c("dex"))
+```
+
+```{r}
+pcaData <- plotPCA(vsd, intgroup=c("dex"), returnData=TRUE)
+head(pcaData)
+```
+
+```{r}
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+```
+
+```{r}
+ggplot(pcaData) +
+  aes(x = PC1, y = PC2, color = dex) +
+  geom_point(size =3) +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  coord_fixed() +
+  theme_bw()
+```
+
+## DESeq Analysis 
+
+```{r}
+#results(dds)
+```
+
+```{r}
+dds <-DESeq(dds)
+```
+
+### Getting results 
+
+```{r}
+res <-results(dds)
+res
+```
+
+For statistical significance
+
+```{r}
+res05 <- results(dds, alpha=0.05)
+
+summary(res05)
+```
+
+## Adding Annotation 
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+The main function we will use here is called `mapIds()`
+
+Our current IDs are here:
+```{r}
+#mapIds()
+head(row.names(res))
+```
+
+These are in ENSEMBLE format. I want "SYMBOL" ids: 
+
+```{r}
+res$symbol <-mapIds(org.Hs.eg.db,
+                    keys = row.names(res),
+                    keytype="ENSEMBL",       #Our genenames
+                    column = "SYMBOL",      #Format our our new genenames
+                    multiVals = "first")    #New format we want to add 
+
+head(res)
+```
+
+Let's add GENENAME
+
+```{r}
+res$genename <- mapIds(org.Hs.eg.db,
+                    keys = row.names(res),
+                    keytype= "ENSEMBL",       #Our genenames
+                    column = "GENENAME",    #Format our our new genenames
+                    multiVals = "first")    #New format we want to add 
+
+head(res)
+```
+
+```{r}
+res$entrez <- mapIds(org.Hs.eg.db,
+                    keys = row.names(res),
+                    keytype = "ENSEMBL", #Our genenames
+                    column = "ENTREZID",    #Format our our new genenames
+                    multiVals = "first")    #New format we want to add 
+
+```
+
+```{r}
+res$uniprot <- mapIds(org.Hs.eg.db,
+                    keys = row.names(res),
+                    keytype =  "ENSEMBL",       #Our genenames
+                    column = "UNIPROT",      #Format our our new genenames
+                    multiVals = "first")    #New format we want to add 
+
+```
+
+Part 10: Pathway Analysis 
+
+```{r}
+#
+library(pathview)
+library(gage)
+library(gageData)
+```
+
+Let's have a peak at the first two pathways in KEGG
+```{r}
+data(kegg.sets.hs)
+
+# Examine the first 2 pathways in this kegg set for humans
+head(kegg.sets.hs, 2)
+```
+
+What we need for `gage()` is our genes in ENTREZ id format with a measure of their importance. 
+
+It wants a vector of e.g. fold-changes. 
+
+```{r}
+foldchanges = res$log2FoldChange
+```
+
+```{r}
+names(foldchanges) = res$entrez
+head(foldchanges)
+```
+
+Now we can run `gage()` with this input vector and the genset we want to examine for overlap/enrichment...
+
+```{r}
+# Get the results
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+```
+
+Look at the results
+```{r}
+attributes(keggres)
+```
+
+```{r}
+head(keggres$less, 3)
+```
+
+We can view these pathways with our geneset genes highlighted using the `pathview()` function. E.g. for "Asthma" I will use the pathway.id hsa05310 as seen above. 
+
+```{r}
+pathview(gene.data = foldchanges, pathway.id = "hsa05310")
+```
+
+![My genes involved in Asthma pathway](hsa05310.pathview.png)
+

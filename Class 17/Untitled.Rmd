@@ -1,0 +1,20 @@
+---
+title: "Class 17"
+author: "Abzael V."
+date: "2023-12-03"
+output: html_document
+---
+
+```{r}
+# Get working directory location
+default_dir <- getwd()
+
+# Construct full file path using that default location
+tsv_file <- file.path(default_dir, "mm-second.x.zebrafish.tsv")
+
+# Read TSV file (tsv = tab separated values = delimited by tabs)
+library(readr) 
+read_tsv(tsv_file) 
+```
+
+
