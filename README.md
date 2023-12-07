@@ -11,6 +11,5 @@ My class work for Fall23 in [Bimm143](https://bioboot.github.io/bimm143_F23/) at
 - Class 13: [ggplot](https://github.com/Abzael/BIMM143_github/blob/main/Class%2013/Class-13---Transcriptomics.pdf)
 - Class 14: [ggplot](https://github.com/Abzael/BIMM143_github/blob/main/BIMM%20143%20Class%2014/RNA-Seq-Analysis.pdf)
 - Class 15: 
-- Class 16: [ggplot](https://github.com/Abzael/BIMM143_github/blob/main/Class05/Class05.pdf)
 - Class 17: [ggplot](https://github.com/Abzael/BIMM143_github/blob/main/Class%2017/Untitled.Rmd)
 - Class 19: [ggplot](https://github.com/Abzael/BIMM143_github/blob/main/Class05/Class05.pdf)
